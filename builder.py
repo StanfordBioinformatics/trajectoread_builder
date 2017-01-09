@@ -369,11 +369,16 @@ def parse_args(args):
                         action = 'store_true',
                         default = False,
                         help = 'Does not actually create applet or workflow')
+    if len(sys.argv[1:]) < 1:
+        logger.warning('No arguments specified')
+        parser.print_help()
+        sys.exit()
     args = parser.parse_args(args)
     return(args)
 
 def main():
 
+    global logger
     logger = configure_logger(source_type='Main')
 
     # Parse arguments

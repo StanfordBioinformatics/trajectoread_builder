@@ -1,0 +1,3 @@
+[submodule "trajectoread_source"]
+	path = trajectoread_source
+	url = git@github.com:StanfordBioinformatics/trajectoread_source.git

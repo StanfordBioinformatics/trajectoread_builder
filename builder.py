@@ -25,9 +25,10 @@ from dxpy import app_builder
 
 class WorkflowBuild:
 
-    def __init__(self, workflow_config_path, project_dxid, dx_folder, 
-                 path_list, dry_run):
+    def __init__(self, workflow_config_path, region, project_dxid, 
+                 dx_folder, path_list, dry_run):
 
+        self.region = region
         self.project_dxid = project_dxid
         self.dx_folder = dx_folder
 
@@ -61,6 +62,7 @@ class WorkflowBuild:
             
             applet = AppletBuild(
                                  applet_path = applet_name,
+                                 region = region,
                                  project_dxid = project_dxid,
                                  dx_folder = dx_folder,
                                  dry_run = dry_run)
@@ -191,7 +193,7 @@ class WorkflowBuild:
 
 class AppletBuild:
 
-    def __init__(self, applet_path, project_dxid, dx_folder, dry_run):
+    def __init__(self, applet_path, region, project_dxid, dx_folder, dry_run):
 
         self.logger = configure_logger(
                                        name = os.path.basename(applet_path), 
@@ -205,7 +207,7 @@ class AppletBuild:
         with open(dxapp_path, 'r') as DXAPP:
             dxapp_json = json.load(DXAPP)  
             
-        version = dxapp_json['details']['upstreamVersion']
+        #version = dxapp_json['details']['upstreamVersion']
         name = dxapp_json['name'] 
         dx_folder = os.path.join(dx_folder) 
         dx_applet_path = os.path.join(dx_folder, name)  
@@ -219,6 +221,15 @@ class AppletBuild:
                              "Folder '%s'" % dx_folder +
                              " in project: '%s'" % project_dxid +
                              ' already exists.')
+        '''
+        build_args = [
+                      'dx',
+                      'build',
+                      '%s' % applet_path, 
+                      '-d=%s:%s' % (project_dxid, dx_applet_path),
+                      '-f',
+                      '--region=%s' % region]
+        '''
 
         build_args = [
                       'dx',
@@ -232,6 +243,9 @@ class AppletBuild:
         self.logger.info(build_args)
 
         result = subprocess.check_output(build_args)
+        if dry_run:
+            print result
+            return
         result = ast.literal_eval(result)
         self.dxid = result['id']
 
@@ -369,6 +383,14 @@ def parse_args(args):
                         action = 'store_true',
                         default = False,
                         help = 'Does not actually create applet or workflow')
+    parser.add_argument(
+                        '-r',
+                        '--region',
+                        dest = 'region',
+                        type = str,
+                        choices = ['azure:westus','aws:us-east-1'],
+                        default = 'azure:westus',
+                        help = 'Choose DNAnexus region')
     if len(sys.argv[1:]) < 1:
         logger.warning('No arguments specified')
         parser.print_help()
@@ -407,15 +429,16 @@ def main():
     # Read 'builder.json' configuration file for building workflows/applets
     with open('builder.json', 'r') as build_json:
         build_config = json.load(build_json)
-        dnanexus_os = build_config['dnanexus_OS']
-        project_dxid = build_config[type][args.env]['dxid']
-        dx_folder = build_config[type][args.env]['folder']
+        dnanexus_os = build_config['region'][args.region]['dnanexus_OS']
+        project_dxid = build_config['region'][args.region][type][args.env]['dxid']
+        dx_folder = build_config['region'][args.region][type][args.env]['folder']
 
     # Create build object
     if args.applet_path:
         logger.info('Building applet: %s' % args.applet_path)
         builder = AppletBuild(
                               applet_path = args.applet_path,
+                              region = args.region,
                               project_dxid = project_dxid,
                               dx_folder = dx_folder,
                               dry_run = args.dry_run)
@@ -423,6 +446,7 @@ def main():
         logger.info('Building workflow: %s' % args.workflow_path)
         builder = WorkflowBuild(
                                 workflow_config_path = args.workflow_path,
+                                region = args.region,
                                 project_dxid = project_dxid,
                                 dx_folder = dx_folder,
                                 path_list = path_list,

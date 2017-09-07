@@ -1,0 +1,58 @@
+{
+    "region": {
+        "aws:us-east-1": {
+            "workflow": {
+                "production": {
+                               "name": "Workflows-Prod",
+                               "folder": "/builder",
+                               "dxid": ""
+                },
+                "develop": {
+                            "name": "Workflows-Dev",
+                            "folder": "/builder",
+                            "dxid": ""
+                }
+            },
+            "applet": {
+                "production": {
+                               "name": "Applets-Prod",
+                               "folder": "/builder",
+                               "dxid": ""
+                },
+                "develop": {
+                            "name": "Applets-Dev",
+                            "folder": "/builder",
+                            "dxid": ""
+                }
+            },
+            "dnanexus_OS": "Ubuntu-12.04"
+        },
+        "azure:westus": {
+            "workflow": {
+                "production": {
+                               "name": "Workflows-Prod",
+                               "folder": "/workflows",
+                               "dxid": ""
+                },
+                "develop": {
+                            "name": "Workflows-Dev",
+                            "folder": "/workflows",
+                            "dxid": ""
+                }
+            },
+            "applet": {
+                "production": {
+                               "name": "Applets-Prod",
+                               "folder": "/applets",
+                               "dxid": ""
+                },
+                "develop": {
+                            "name": "Applets-Dev",
+                            "folder": "/applets",
+                            "dxid": ""
+                }
+            },
+            "dnanexus_OS": "Ubuntu-12.04"
+        }
+    }
+} 

@@ -28,7 +28,12 @@
             "type": "stand-alone",
             "folder": "/stage2_gatk-genotyper", 
             "input": {
-                "genome_fastagz": {"$dnanexus_link": {"project": "project-BQpp3Y804Y0xbyG4GJPQ01xv", "id": "file-B6ZXxfG2J35Vfvpkj8y0KXF5"}}
+                "genome_fastagz": {
+				   "$dnanexus_link": {
+						      "project": "project-BQpp3Y804Y0xbyG4GJPQ01xv", 
+						      "id": "file-B6ZXxfG2J35Vfvpkj8y0KXF5"
+				   }
+	        }
             },
             "linked_input": {
                 "sorted_bams": {

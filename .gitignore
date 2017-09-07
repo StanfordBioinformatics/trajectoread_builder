@@ -1,2 +1,5 @@
 # Ignore logs files
 logs/*
+
+# Ignore sublime text-editor files
+*.sublime-*

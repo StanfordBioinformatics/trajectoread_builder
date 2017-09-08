@@ -2,7 +2,7 @@
 
 ## Overview
 Builder is a module of the trajectoread suite of tools 
-designed to simplify the process of deploying DNAnexus applets and workflows.
+designed to simplify deployment of applets and workflows on DNAnexus.
 It is a command-line tool that allows users to automatically build DNAnexus 
 workflows based on JSON configuration files.
 
@@ -23,11 +23,11 @@ workflows based on JSON configuration files.
 * **builder.py**: Python script used to build applets and workflows.
 * **builder.json**: Configuration file with user-specific information describing 
 DNAnexus build locations.
-* **workflows/fastqc_bwa-mem_gatk-genotyper.json**: Sample workflow configuration file used to generate a 3-step workflow.
+* **workflows/fastqc_bwa-mem_gatk-genotyper.json**: Sample configuration file used to generate a 3-step workflow.
 
 ## Setup
 
-This will guide you through the steps of installing builder, configuring the JSON file, and building a sample workflow on DNAnexus.
+This will guide you through the steps of installing builder, configuring the JSON file, and building a sample applet & workflow on DNAnexus.
 
 ### 1. Install the DNAnexus SDK
 Visit https://wiki.dnanexus.com/Downloads and follow instructions to 
@@ -45,10 +45,16 @@ git clone git@github.com:StanfordBioinformatics/trjread-builder.git
 mv builder.json.template builder.json
 ```
 
-### 4.
+### 4. Populatate builder.json configuration data
 Open builder.json file in a text editor and fill in DNAnexus environment information.
 
-### 5. Build sample workflow on DNAnexus
+### 5. Build FastQC applet on DNAnexus
+
+```r
+python builder.py -e develop -r aws:us-east-1 -a fastqc
+```
+
+### 6. Build sample workflow on DNAnexus
 
 ```r
 python builder.py -e develop -r aws:us-east-1 -w workflows/fastqc_bwa-mem_gatk-genotyper.json

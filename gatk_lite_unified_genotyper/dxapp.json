@@ -2,10 +2,9 @@
   "name": "gatk_lite_unified_genotyper",
   "title": "GATK-Lite Variant Caller (Unified Genotyper)",
   "summary": "Calls SNPs and/or indels (using GATK-lite Unified Genotyper)",
-  "tags": [
-    "Variation Calling"
-  ],
   "dxapi": "1.0.0",
+  "openSource": true,
+  "version": "1.0.6",
   "inputSpec": [
     {
       "name": "sorted_bams",
@@ -24,7 +23,32 @@
         {
           "project": "project-BQpp3Y804Y0xbyG4GJPQ01xv",
           "path": "/",
-          "name": "DNAnexus Reference Genomes"
+          "region": "aws:us-east-1",
+          "name": "DNAnexus Reference Genomes: AWS US-east"
+        },
+        {
+          "project": "project-Bxv84pQ27z999kj0jbQz0FK9",
+          "path": "/",
+          "region": "aws:cn-north-1",
+          "name": "DNAnexus Reference Genomes: AWS China-north"
+        },
+        {
+          "project": "project-F3zxk7Q4F30Xp8fG69K1Vppj",
+          "path": "/",
+          "region": "aws:eu-central-1",
+          "name": "DNAnexus Reference Genomes: AWS Germany"
+        },
+        {
+          "project": "project-F0yyz6j9Jz8YpxQV8B8Kk7Zy",
+          "path": "/",
+          "region": "azure:westus",
+          "name": "DNAnexus Reference Genomes: Azure West US"
+        },
+        {
+          "project": "project-F4gXb605fKQyBq5vJBG31KGG",
+          "path": "/",
+          "region": "aws:ap-southeast-2",
+          "name": "DNAnexus Reference Genomes: AWS Sydney"
         }
       ]
     },
@@ -39,12 +63,62 @@
         {
           "project": "project-B6JG85Z2J35vb6Z7pQ9Q02j8",
           "path": "/gatk.resources.b37",
-          "name": "GRCh37/hs37d5/b37 (1000G Phase I/II)"
+          "region": "aws:us-east-1",
+          "name": "GRCh37/hs37d5/b37 (1000G Phase I/II): AWS US-east"
         },
         {
           "project": "project-B6JG85Z2J35vb6Z7pQ9Q02j8",
           "path": "/gatk.resources.hg19",
-          "name": "UCSC hg19"
+          "region": "aws:us-east-1",
+          "name": "UCSC hg19: AWS US-east"
+        },
+        {
+          "project": "project-F3zqGV04fXX5j7566869fjFq",
+          "path": "/gatk.resources.b37",
+          "region": "aws:eu-central-1",
+          "name": "GRCh37/hs37d5/b37 (1000G Phase I/II): AWS Germany"
+        },
+        {
+          "project": "project-F3zqGV04fXX5j7566869fjFq",
+          "path": "/gatk.resources.hg19",
+          "region": "aws:eu-central-1",
+          "name": "UCSC hg19: AWS Germany"
+        },
+        {
+          "project": "project-F29KXx020fXF13JyFQ4qQvB4",
+          "path": "/gatk.resources.b37",
+          "region": "aws:cn-north-1",
+          "name": "GRCh37/hs37d5/b37 (1000G Phase I/II): AWS China-north"
+        },
+        {
+          "project": "project-F29KXx020fXF13JyFQ4qQvB4",
+          "path": "/gatk.resources.hg19",
+          "region": "aws:cn-north-1",
+          "name": "UCSC hg19: AWS China-north"
+        },
+        {
+          "project": "project-F29g0xQ90fvQf5z1BX6b5106",
+          "path": "/gatk.resources.b37",
+          "region": "azure:westus",
+          "name": "GRCh37/hs37d5/b37 (1000G Phase I/II): Azure West US"
+        },
+        {
+          "project": "project-F29g0xQ90fvQf5z1BX6b5106",
+          "path": "/gatk.resources.hg19",
+          "region": "azure:westus",
+          "name": "UCSC hg19: Azure West US"
+        },
+        {
+          "project": "project-F4gYG1850p1JXzjp95PBqzY5",
+          "path": "/gatk.resources.b37",
+          "region": "aws:ap-southeast-2",
+          "name": "GRCh37/hs37d5/b37 (1000G Phase I/II) [tick all three]: AWS Sydney"
+        },
+        {
+          "project": "project-F4gYG1850p1JXzjp95PBqzY5",
+          "path": "/gatk.resources.hg19",
+          "region": "aws:ap-southeast-2",
+          "name": "UCSC hg19 [tick all three]: AWS Sydney"
         }
       ]
     },
@@ -85,13 +159,75 @@
         "name": "openjdk-6-jre-headless"
       }
     ],
-    "systemRequirements": {
-      "main": {
-        "instanceType": "mem2_hdd2_x2"
+    "systemRequirementsByRegion": {
+      "azure:westus": {
+        "*": {
+          "instanceType": "azure:mem2_ssd1_x16"
+        }
+      },
+      "aws:us-east-1": {
+        "*": {
+          "instanceType": "mem2_hdd2_x2"
+        }
+      },
+      "aws:cn-north-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      },
+      "aws:ap-southeast-2": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      },
+      "aws:eu-central-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
       }
     },
     "file": "src/code.sh",
     "interpreter": "bash"
+  },
+  "authorizedUsers": [
+    "PUBLIC"
+  ],
+  "regionalOptions": {
+    "azure:westus": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "azure:mem2_ssd1_x16"
+        }
+      }
+    },
+    "aws:us-east-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem2_hdd2_x2"
+        }
+      }
+    },
+    "aws:cn-north-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      }
+    },
+    "aws:ap-southeast-2": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      }
+    },
+    "aws:eu-central-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      }
+    }
   },
   "details": {
     "upstreamUrl": "http://www.broadinstitute.org/gatk/",
@@ -100,5 +236,9 @@
       "MIT License"
     ],
     "whatsNew": "* 1.0.3: Updated suggestions for reference genomes\n* 1.0.2: Devote 90% of instance memory to java\n* 1.0.1: Added GRCh38 to suggestions"
-  }
+  },
+  "categories": [
+    "Variation Calling"
+  ],
+  "access": {}
 }

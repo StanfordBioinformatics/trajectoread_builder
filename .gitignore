@@ -1,3 +1,6 @@
+# Ignore temp swp files
+*.swp
+
 # Ignore config file with user-specific data
 builder.json
 

@@ -292,6 +292,8 @@ def parse_args(args):
                         '--environment',
                         dest = 'env',
                         type = str,
+                        choices = ['develop', 'production'],
+                        default = 'develop',
                         help = 'Select DNAnexus environment [develop, production]')
     parser.add_argument(
                         '-d',

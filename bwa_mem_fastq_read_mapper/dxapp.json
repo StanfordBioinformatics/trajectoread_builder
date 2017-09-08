@@ -2,10 +2,9 @@
   "name": "bwa_mem_fastq_read_mapper",
   "title": "BWA-MEM FASTQ Read Mapper",
   "summary": "Maps FASTQ reads (paired or unpaired) to a reference genome with the BWA-MEM algorithm",
-  "tags": [
-    "Read Mapping"
-  ],
   "dxapi": "1.0.0",
+  "openSource": true,
+  "version": "1.5.4",
   "inputSpec": [
     {
       "name": "reads_fastqgz",
@@ -32,7 +31,32 @@
         {
           "project": "project-BQpp3Y804Y0xbyG4GJPQ01xv",
           "path": "/",
-          "name": "DNAnexus Reference Genomes"
+          "region": "aws:us-east-1",
+          "name": "DNAnexus Reference Genomes: AWS US-east"
+        },
+        {
+          "project": "project-Bxv84pQ27z999kj0jbQz0FK9",
+          "path": "/",
+          "region": "aws:cn-north-1",
+          "name": "DNAnexus Reference Genomes: AWS: China-north"
+        },
+        {
+          "project": "project-F3zxk7Q4F30Xp8fG69K1Vppj",
+          "path": "/",
+          "region": "aws:eu-central-1",
+          "name": "DNAnexus Reference Genomes: AWS Germany"
+        },
+        {
+          "project": "project-F0yyz6j9Jz8YpxQV8B8Kk7Zy",
+          "path": "/",
+          "region": "azure:westus",
+          "name": "DNAnexus Reference Genomes: Azure West US"
+        },
+        {
+          "project": "project-F4gXb605fKQyBq5vJBG31KGG",
+          "path": "/",
+          "region": "aws:ap-southeast-2",
+          "name": "DNAnexus Reference Genomes: AWS Sydney"
         }
       ]
     },
@@ -141,13 +165,75 @@
     }
   ],
   "runSpec": {
-    "systemRequirements": {
-      "main": {
-        "instanceType": "mem1_ssd1_x8"
+    "systemRequirementsByRegion": {
+      "azure:westus": {
+        "*": {
+          "instanceType": "azure:mem2_ssd1_x16"
+        }
+      },
+      "aws:us-east-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      },
+      "aws:cn-north-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x16"
+        }
+      },
+      "aws:ap-southeast-2": {
+        "*": {
+          "instanceType": "mem1_ssd1_x16"
+        }
+      },
+      "aws:eu-central-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x16"
+        }
       }
     },
     "file": "src/code.sh",
     "interpreter": "bash"
+  },
+  "authorizedUsers": [
+    "PUBLIC"
+  ],
+  "regionalOptions": {
+    "azure:westus": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "azure:mem2_ssd1_x16"
+        }
+      }
+    },
+    "aws:us-east-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      }
+    },
+    "aws:cn-north-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x16"
+        }
+      }
+    },
+    "aws:ap-southeast-2": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x16"
+        }
+      }
+    },
+    "aws:eu-central-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x16"
+        }
+      }
+    }
   },
   "details": {
     "upstreamUrl": "http://bio-bwa.sourceforge.net/",
@@ -157,5 +243,9 @@
     ],
     "upstreamAuthor": "Heng Li",
     "whatsNew": "* 1.5.0: Updated to bwa 0.7.12 and samtools 1.1\n* 1.4.2: Updating documentation\n* 1.4.1: Updated suggestions for reference genomes\n* 1.4.0: Updated to bwa 0.7.10; lowered samtools memory usage\n* 1.3.0: Updated to bwa 0.7.9a; added BAM index output\n* 1.2.0: Updated to bwa 0.7.8; changed default instance type\n* 1.1.1: Added GRCh38 to suggestions\n* 1.1.0: Updated to bwa 0.7.5a"
-  }
+  },
+  "categories": [
+    "Read Mapping"
+  ],
+  "access": {}
 }

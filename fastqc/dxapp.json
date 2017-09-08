@@ -2,11 +2,9 @@
   "name": "fastqc",
   "title": "FastQC Reads Quality Control",
   "summary": "Generates a QC report on reads data",
-  "tags": [
-    "Read QC",
-    "Statistics"
-  ],
   "dxapi": "1.0.0",
+  "openSource": true,
+  "version": "2.2.3",
   "inputSpec": [
     {
       "name": "reads",
@@ -100,13 +98,75 @@
         "name": "openjdk-7-jre-headless"
       }
     ],
-    "systemRequirements": {
-      "main": {
-        "instanceType": "mem1_ssd1_x4"
+    "systemRequirementsByRegion": {
+      "azure:westus": {
+        "*": {
+          "instanceType": "azure:mem2_ssd1_x8"
+        }
+      },
+      "aws:us-east-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      },
+      "aws:cn-north-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      },
+      "aws:ap-southeast-2": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      },
+      "aws:eu-central-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
       }
     },
     "file": "src/code.sh",
     "interpreter": "bash"
+  },
+  "authorizedUsers": [
+    "PUBLIC"
+  ],
+  "regionalOptions": {
+    "azure:westus": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "azure:mem2_ssd1_x8"
+        }
+      }
+    },
+    "aws:us-east-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      }
+    },
+    "aws:cn-north-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      }
+    },
+    "aws:ap-southeast-2": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      }
+    },
+    "aws:eu-central-1": {
+      "systemRequirements": {
+        "*": {
+          "instanceType": "mem1_ssd1_x4"
+        }
+      }
+    }
   },
   "details": {
     "upstreamUrl": "http://www.bioinformatics.babraham.ac.uk/projects/fastqc/",
@@ -116,5 +176,10 @@
     ],
     "upstreamAuthor": "Simon Andrews",
     "whatsNew": "* 2.2.0: Updated to FastQC 0.11.3; changed default instance type\n* 2.1.0: Updated to FastQC 0.11.2; changed default values for the 'kmer_size' and 'nogroup' parameters\n* 2.0.1: Fixed error when mid line is null\n* 2.0.0: Changing output spec to TXT and HTML files"
-  }
+  },
+  "categories": [
+    "Read QC",
+    "Statistics"
+  ],
+  "access": {}
 }

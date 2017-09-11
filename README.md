@@ -25,7 +25,7 @@ workflows based on JSON configuration files.
 DNAnexus build locations.
 * **workflows/fastqc_bwa-mem_gatk-genotyper.json**: Sample configuration file used to generate a 3-step workflow.
 
-## Setup
+## Getting Started
 
 This will guide you through the steps of installing builder, configuring the JSON file, and building a sample applet & workflow on DNAnexus.
 
@@ -35,7 +35,7 @@ install dx-toolkit.
 
 ### 2. Clone the repository.
 
-```r
+```
 git clone git@github.com:StanfordBioinformatics/trjread-builder.git
 ```
 

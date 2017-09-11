@@ -21,6 +21,29 @@ from dxpy import app_builder
 #global applet_logger
 
 class WorkflowBuild:
+    '''Build workflow on DNAnexus.
+
+    Build a workflow using local DNAnexus applet source files and a
+    JSON configuration file.
+
+    Args:
+        workflow_config_path (str): Path of workflow configuration JSON
+        region (str): DNAnexus region.
+        project_dxid (str): DNAnexus project ID.
+        dx_folder (str): DNAnexus project folder name.
+        dry_run (bool): Dry-run does not build any DNAnexus objects.
+    
+    Attributes:
+        region (str): DNAnexus region.
+        project_dxid (str): DNAnexus project ID.
+        dx_folder (str): DNAnexus project folder name.
+        applet_dxids (dict): IDs of DNAnexus applets
+        self.name (str): Workflow name
+        self.object ()
+
+
+
+    '''
 
     def __init__(
                  self, 
@@ -77,7 +100,12 @@ class WorkflowBuild:
                            }
         
         # Create DXWorkflow object on DNAnexus
-        self.create_workflow_object(details=workflow_details)
+        self.object = self.create_workflow_object(
+                                                  self.name,
+                                                  self.project_dxid,
+                                                  self.dx_folder,
+                                                  details=workflow_details)
+        #self.create_workflow_object(details=workflow_details)
 
         # Add executables to each workflow stage
         for stage_index in range(0, len(self.stages)):
@@ -91,9 +119,9 @@ class WorkflowBuild:
         
         dxpy.api.workflow_close(self.object_dxid)
         self.logger.info('Build complete: {} ,'.format(self.name) +
-                             'workflow id: {}:{}'.format(
-                                                         self.project_dxid,
-                                                         self.object_dxid))
+                         'workflow id: {}:{}'.format(
+                                                     self.project_dxid,
+                                                     self.object_dxid))
 
     def create_workflow_object(self, environment=None, properties=None, details=None):
         ''' Description: In development environment, find and delete any old workflow
@@ -104,13 +132,13 @@ class WorkflowBuild:
         '''
 
         # Create new workflow
-        self.object = dxpy.new_dxworkflow(title = self.name,
+        workflow_object = dxpy.new_dxworkflow(
+                                          title = self.name,
                                           name =  self.name,
                                           project = self.project_dxid,
                                           folder = self.dx_folder,
                                           properties = properties,
-                                          details = details
-                                          )
+                                          details = details)
         self.object_dxid = self.object.describe()['id']
 
     def update_stage_executable(self, stage_index):

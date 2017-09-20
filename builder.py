@@ -17,9 +17,6 @@ import subprocess
 
 from dxpy import app_builder
 
-#global workflow_logger
-#global applet_logger
-
 class WorkflowBuild:
     '''Build workflow on DNAnexus.
 
@@ -27,7 +24,7 @@ class WorkflowBuild:
     JSON configuration file.
 
     Args:
-        workflow_config_path (str): Path of workflow configuration JSON
+        workflow_config_path (str): Path of workflow configuration JSON file.
         region (str): DNAnexus region.
         project_dxid (str): DNAnexus project ID.
         dx_folder (str): DNAnexus project folder name.
@@ -37,9 +34,12 @@ class WorkflowBuild:
         region (str): DNAnexus region.
         project_dxid (str): DNAnexus project ID.
         dx_folder (str): DNAnexus project folder name.
-        applet_dxids (dict): IDs of DNAnexus applets
-        self.name (str): Workflow name
-        self.object ()
+        applet_dxids (dict): IDs of DNAnexus applets.
+        self.name (str): Workflow name.
+        self.object (DXWorkflow): DNAnexus workflow object.
+        self.object_dxid (str): DNAnexus workflow ID.
+        self.edit_version (int): Workflow edit version; for updating stages.
+        logger (Logger)
 
 
 
@@ -57,15 +57,19 @@ class WorkflowBuild:
         self.project_dxid = project_dxid
         self.dx_folder = dx_folder
 
-        self.applet_dxids = {}
-        
+        # Get from workflow JSON
         self.name = None
-        self.object = None
-        self.object_dxid = None
-        self.edit_version = None
+        self.details = None
+        self.properties = None
+        self.tags = None
+
+        # Generate at runtime
+        self.workflow = None
+        self.workflow_dxid = None
+        self.stages = {}
+        self.applet_dxids = {}
 
         # Configure loggers for BuildWorkflow and Applet classes
-        workflow_config_name = os.path.basename(workflow_config_path)
         self.logger = config_logger('Build Workflow')
 
         # Logic for choosing applet path in DXProject; used by Applet:write_config_file()
@@ -73,127 +77,112 @@ class WorkflowBuild:
                                                                   project_dxid, 
                                                                   dx_folder))
 
-        # Create workflow configuration object
+        # Parse workflow information from configuration file
         with open(workflow_config_path, 'r') as CONFIG:
             workflow_config = json.load(CONFIG)
-        self.stages = workflow_config['stages']
-        self.name = workflow_config['name']
+        self.details = workflow_config['details']
+        self.properties = workflow_config['properties']
+        self.tags = workflow_config['tags']
+        self.stages_config = workflow_config['stages']
+        self.name = self.details['name']
 
-        # Build all applets listed in workflow
-        for stage_index in self.stages:
-            applet_name = workflow_config['stages'][stage_index]['executable']
-            #print applet
-            
+        # Create DXWorkflow object on DNAnexus
+        self.workflow = dxpy.new_dxworkflow(
+                                            title = self.name,
+                                            name = self.name,
+                                            project = self.project_dxid,
+                                            folder = self.dx_folder,
+                                            properties = self.properties,
+                                            details = self.details,
+                                            tags = self.tags)
+        self.workflow_dxid = self.workflow.describe()['id']
+
+        # Build applets and create workflow stages
+        for stage_index in range(0, len(self.stages_config)):
+            stage_index = str(stage_index)
+            stage = WorkflowStage(self.workflow, stage_index)
+
+            applet_name = self.stages_config[stage_index]['executable']
             applet = AppletBuild(
                                  applet_path = applet_name,
                                  region = region,
                                  project_dxid = project_dxid,
                                  dx_folder = dx_folder,
                                  dry_run = dry_run)
-
             self.applet_dxids[applet_name] = applet.dxid
-        
-        # Create workflow 
-        workflow_details = {
-                            'name': workflow_config['name'],
-                            'version': workflow_config['version'],
-                           }
-        
-        # Create DXWorkflow object on DNAnexus
-        self.object = self.create_workflow_object(
-                                                  self.name,
-                                                  self.project_dxid,
-                                                  self.dx_folder,
-                                                  details=workflow_details)
-        #self.create_workflow_object(details=workflow_details)
+            
+            # Add stage to DNAnexus workflow object
+            self.logger.info('Creating workflow stage for {}'.format(applet_name))
+            output_folder = self.stages_config[stage_index]['folder']
+            stage.create(applet.dxid, output_folder)
+            self.stages[stage_index] = stage
 
-        # Add executables to each workflow stage
-        for stage_index in range(0, len(self.stages)):
-            self.logger.info('Setting executable for stage {}'.format(stage_index))
-            self.add_stage_executable(str(stage_index))
-
-        # Add applet inputs to each workflow stage
+        # Add inputs to each workflow stage
         for stage_index in range(0, len(self.stages)):
             self.logger.info('Setting inputs for stage {}'.format(stage_index))
-            self.set_stage_inputs(str(stage_index))
+            stage_index = str(stage_index)
+            stage = self.stages[stage_index]
+
+            standard_inputs = self.stages_config[stage_index]['input']
+            linked_inputs = self.stages_config[stage_index]['linked_input']
+            stage.set_inputs(self.stages, standard_inputs, linked_inputs)
         
-        dxpy.api.workflow_close(self.object_dxid)
+        dxpy.api.workflow_close(self.workflow_dxid)
         self.logger.info('Build complete: {} ,'.format(self.name) +
                          'workflow id: {}:{}'.format(
                                                      self.project_dxid,
-                                                     self.object_dxid))
+                                                     self.workflow_dxid))
 
-    def create_workflow_object(self, environment=None, properties=None, details=None):
-        ''' Description: In development environment, find and delete any old workflow
-            object and create new one every time. If there is an existing workflow in
-            the production environment, throw an error. Never delete an existing 
-            production workflow or writing two production workflows to the same project 
-            folder.
+class WorkflowStage:
+
+    def __init__(self, workflow, stage_index):
+
+        self.workflow = workflow
+        self.index = stage_index
+        self.dxid = None 
+
+    def create(self, applet_dxid, output_folder):
+        '''Add new stage to DNAnexus workflow.
+
+        Args:
+            applet_dxid (str): Stage applet dxid.
+            output_folder (str): Applet output folder.
+
+        Returns:
+            self.dxid (str): Stage dxid.
         '''
 
-        # Create new workflow
-        workflow_object = dxpy.new_dxworkflow(
-                                          title = self.name,
-                                          name =  self.name,
-                                          project = self.project_dxid,
-                                          folder = self.dx_folder,
-                                          properties = properties,
-                                          details = details)
-        self.object_dxid = self.object.describe()['id']
+        edit_version = self.workflow.describe()['editVersion']
+        self.dxid = self.workflow.add_stage(
+                                            edit_version = edit_version,
+                                            executable = applet_dxid,
+                                            folder = output_folder)
+        return self.dxid
 
-    def update_stage_executable(self, stage_index):
-        ''' Description: Not in use since current strategy is to always create
-            new workflow objects.
+    def set_inputs(self, stages, standard_inputs, linked_inputs):
+        '''Set inputs to workflow stage.
+
+        Args:
+            stages (dict?): Dictionary of WorkflowStage objects.
+            std_inputs (dict): Static input values or links to 
+                              objects in DX Object Store.
+            linked_inputs (dict): Input objects that are generated as 
+                                 output of previous workflow stages.
         '''
-
-        self.edit_version = self.object.describe()['editVersion']
         
-        output_folder = self.stages[stage_index]['folder']
-        applet_name = self.stages[stage_index]['executable']
-        applet_dxid = self.applet_dxids[applet_name]
-        self.object.update_stage(
-                                 stage = stage_index,
-                                 edit_version = self.edit_version, 
-                                 executable = applet_dxid, 
-                                 folder = output_folder)
-
-    def add_stage_executable(self, stage_index):
-
-        self.edit_version = self.object.describe()['editVersion']
-    
-        output_folder = self.stages[stage_index]['folder']
-        applet_name = self.stages[stage_index]['executable']
-
-        applet_dxid = self.applet_dxids[applet_name]
-        stage_dxid = self.object.add_stage(
-                                           edit_version = self.edit_version,
-                                           executable = applet_dxid,
-                                           folder = output_folder)
-        self.stages[stage_index]['dxid'] = stage_dxid
-
-    def set_stage_inputs(self, stage_index):
-        if not self.stages[stage_index]['dxid']:
-            logger.error('Stage %s has not yet been created' % stage_index)
         stage_input = {}
+        if not self.dxid:
+            logger.error('Stage %s has not yet been created' % stage_index)
 
-        standard_inputs = self.stages[stage_index]['input']
-        for name in standard_inputs:
-            value = self.stages[stage_index]['input'][name]
-            if value == '$dnanexus_link':
-                print value
-                project = value['project']
-                dxid = value['id']
-                dxlink = dxpy.dxlink(dxid, project)
-                value = dxlink
-            stage_input[name] = value
+        for key, value in standard_inputs.iteritems():
+            stage_input[key] = value
 
-        linked_inputs = self.stages[stage_index]['linked_input']
         for field_name in linked_inputs:
             linked_input = linked_inputs[field_name]
             if type(linked_input) is dict:
                 field_type = linked_input['field']
                 input_stage_index = linked_input['stage']
-                input_stage_dxid = self.stages[input_stage_index]['dxid']
+                input_stage_dxid = stages[input_stage_index].dxid
                 stage_input[field_name] = {'$dnanexus_link': {
                                                               'stage': input_stage_dxid,
                                                               field_type: field_name
@@ -204,7 +193,7 @@ class WorkflowBuild:
                 for list_input in linked_input:
                     field_type = list_input['field']
                     input_stage_index = list_input['stage']
-                    input_stage_dxid = self.stages[input_stage_index]['dxid']
+                    input_stage_dxid = stages[input_stage_index].dxid
                     stage_input[field_name].append({
                                                     '$dnanexus_link': {
                                                                        'stage': input_stage_dxid,
@@ -212,11 +201,12 @@ class WorkflowBuild:
                                                                       }
                                                    })
 
-        self.edit_version = self.object.describe()['editVersion']
-        self.object.update_stage(
-                                 stage = stage_index,
-                                 edit_version = self.edit_version,
-                                 stage_input = stage_input)
+        edit_version = self.workflow.describe()['editVersion']
+        self.workflow.update_stage(
+                                   stage = self.index,
+                                   edit_version = edit_version,
+                                   stage_input = stage_input)
+        return stage_input
 
 class AppletBuild:
 
@@ -225,7 +215,6 @@ class AppletBuild:
         self.logger = config_logger('Build {}'.format(applet_path))
         self.dxid = None
         
-        # GET VERSION INFO FROM dxapp.json FILE
         dxapp_path = os.path.join(applet_path, 'dxapp.json')
         with open(dxapp_path, 'r') as DXAPP:
             dxapp_json = json.load(DXAPP)  
@@ -322,7 +311,7 @@ def parse_args(args):
                         type = str,
                         choices = ['develop', 'production'],
                         default = 'develop',
-                        help = 'Select DNAnexus environment [develop, production]')
+                        help = 'Select DNAnexus environment.')
     parser.add_argument(
                         '-d',
                         '--dry-run',
@@ -402,7 +391,6 @@ def main():
                                 region = args.region,
                                 project_dxid = project_dxid,
                                 dx_folder = dx_folder,
-                                #path_list = path_list,
                                 dry_run = args.dry_run)
         
 if __name__ == "__main__":

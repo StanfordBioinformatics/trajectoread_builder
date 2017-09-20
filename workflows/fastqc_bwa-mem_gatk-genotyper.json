@@ -1,7 +1,10 @@
 {
-    "name": "fastqc_bwa-mem_gatk-genotyper",
-    "status": "production",
-    "version": "0.0.1",
+    "details": {
+                "name": "fastqc_bwa-mem_gatk-genotyper",
+                "version": "0.0.1"
+    },
+    "properties": {},
+    "tags": [],
     "stages": {
         "0": {
             "executable": "fastqc", 
@@ -14,7 +17,14 @@
             "executable": "bwa_mem_fastq_read_mapper",
             "type": "stand-alone", 
             "folder": "/stage1_bwa-mem", 
-            "input": {},
+            "input": {
+		"genomeindex_targz": {
+				      "$dnanexus_link": {
+							 "project": "project-BQpp3Y804Y0xbyG4GJPQ01xv",
+							 "id": "file-B6ZXq942J35zXb07jjy02pp0"
+				     }
+		}
+	     },
             "linked_input": {
                 "reads_fastqgz": {
                     "field": "inputField", 
